@@ -45,24 +45,28 @@ try:
         back_from_function=get_fruityvice_data(fruit_choice)
         #Output it to the screen as table
         streamlit.dataframe(back_from_function)
-        
+
 except URLError as e:
     streamlit.error()    
 
 #streamlit.write('The user entered ', fruit_choice)
 #streamlit.text(fruityvice_response.json()) #Just writes the json data to display
 
+streamlit.header("The Fruits Load list Contains:")
+#Snowflake related functions
+def get_fruit_load_list():
+    with my_cnx.cursor() as my_cur:
+        my_cur.execute("select * from fruit_load_list;")
+        return my_cur.fetchall()
+
+# add button to load fruits list
+if streamlit.button("Get Fruit List"):
+    my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+    my_data_rows = get_fruit_load_list()
+    streamlit.dataframe(my_data_rows)
+
 #Temp fix to keep unwanted getting inserted in snowflake
 streamlit.stop()
-
-
-
-my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
-my_cur = my_cnx.cursor()
-my_cur.execute("select * from fruit_load_list;")
-my_data_rows = my_cur.fetchall()
-streamlit.header("The Fruits Load list Contains:")
-streamlit.dataframe(my_data_rows)
 
 #Ask user to add a fruit
 add_my_fruit = streamlit.text_input('What fruit would you like add?')
