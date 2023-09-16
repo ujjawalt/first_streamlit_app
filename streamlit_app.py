@@ -52,7 +52,7 @@ except URLError as e:
 #streamlit.write('The user entered ', fruit_choice)
 #streamlit.text(fruityvice_response.json()) #Just writes the json data to display
 
-streamlit.header("The Fruits Load list Contains:")
+streamlit.header("View Our Fruit List - Add Your Favorites!")
 #Snowflake related functions
 def get_fruit_load_list():
     with my_cnx.cursor() as my_cur:
@@ -63,14 +63,22 @@ def get_fruit_load_list():
 if streamlit.button("Get Fruit List"):
     my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
     my_data_rows = get_fruit_load_list()
+    my_cnx.close()
     streamlit.dataframe(my_data_rows)
 
 #Temp fix to keep unwanted getting inserted in snowflake
-streamlit.stop()
+#streamlit.stop()
 
 #Ask user to add a fruit
-add_my_fruit = streamlit.text_input('What fruit would you like add?')
-streamlit.write('Thanks for adding ', add_my_fruit)
+def insert_row_snowflake(new_fruit):
+    with my_cnx.cursor() as my_cur:
+        my_cur.execute("insert into FRUIT_LOAD_LIST values ('" + new_fruit + "')")
+        return 'Thanks for adding '+ new_fruit
 
-#This will not work
-my_cur.execute("insert into FRUIT_LOAD_LIST values ('from streamlit')")
+
+add_my_fruit = streamlit.text_input('What fruit would you like add?')
+if streamlit.button('Add a Fruit to the List'):
+    my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+    my_cnx.close()
+    back_from_function = insert_row_snowflake(add_my_fruit)
+    streamlit.text(back_from_function)
